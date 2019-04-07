@@ -17,10 +17,18 @@ app.use(express.static("public"));
 app.get("/", function(req, res) {
   res.sendFile(__dirname + "/views/index.html");
 });
+app.get("/api/timestamp/", (req, res) => {
+  let currentDate = new Date();
+  res.json({
+    unix: currentDate.getTime(),
+    utc: currentDate.toUTCString()
+  });
+});
 
 app.get("/api/timestamp/:date_string", (req, res) => {
   let dateInPath = req.params.date_string;
   let dateAfterParsing = new Date(dateInPath);
+  console.log(`dateInPath ${dateInPath} dateAfterParsing ${dateAfterParsing}`);
 
   if (dateAfterParsing != "Invalid Date") {
     res.json({
@@ -28,7 +36,17 @@ app.get("/api/timestamp/:date_string", (req, res) => {
       utc: dateAfterParsing.toUTCString()
     });
   } else {
-    res.json({ unix: null, utc: "Invalid Date" });
+    let milliseconds = Number(dateInPath);
+    console.log("typeof " + typeof milliseconds);
+    if (typeof milliseconds === "number") {
+      dateAfterParsing = new Date(milliseconds);
+      res.json({
+        unix: dateAfterParsing.getTime(),
+        utc: dateAfterParsing.toUTCString()
+      });
+    } else {
+      res.json({ unix: null, utc: "Invalid Date" });
+    }
   }
 });
 
